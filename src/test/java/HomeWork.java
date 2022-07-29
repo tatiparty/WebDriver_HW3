@@ -1,10 +1,21 @@
+import com.codeborne.selenide.selector.ByAttribute;
+import com.google.common.util.concurrent.ClosingFuture;
 import helpers.BaseUItest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class HomeWork extends BaseUItest {
@@ -33,11 +44,33 @@ public class HomeWork extends BaseUItest {
     //задание 2
     @Test
     public void test2(){
-        driver.manage().window().fullscreen();
         driver.get("https://demo.w3layouts.com/demos_new/template_demo/03-10-2020/photoflash-liberty-demo_Free/685659620/web/index.html?_ga=2.181802926.889871791.1632394818-2083132868.1632394818");
-        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
-        //driver.findElement(By.id("vdo_ai_cross")).click(); //закрыть окно рекламы, сейчас не появляется, до этого было
-        driver.findElement(By.xpath("//img[@src = \"assets/images/p2.jpg\"]")).click(); //не работает, нужна помощь
+        driver.manage().window().fullscreen();
+        String parentHandler = driver.getWindowHandle();
+
+        By image = By.xpath("//img[@src = \"assets/images/p2.jpg\"]");
+
+        JavascriptExecutor je = (JavascriptExecutor)driver;
+        je.executeScript("arguments[0].scrollIntoView()", getElement(image));
+        je.executeScript("arguments[0].click()", getElement(image));
+
+        Set<String> handles = driver.getWindowHandles(); // не работает
+        System.out.println(handles);
+
+        String subWindowHandler = null;
+
+        Iterator<String> iterator = handles.iterator();
+        while (iterator.hasNext()){
+            subWindowHandler = iterator.next();
+        }
+        driver.switchTo().window(subWindowHandler);
+
+        Assert.assertNotEquals(parentHandler, subWindowHandler); // пока тест фейлится всегда
+    }
+
+    protected WebElement getElement(By locator){
+        WebDriverWait wait = new WebDriverWait(driver, 5);
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
 
     //задание 3
