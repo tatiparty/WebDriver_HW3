@@ -1,25 +1,42 @@
-import helpers.BaseUItest;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+import java.util.List;
 
-public class HomeWork extends BaseUItest {
+public class HomeWork {
 
     String login = "nemykinats@elfin.tech";
     String password = "FmAftPJdVFGh";
 
+    private org.apache.logging.log4j.Logger logger = LogManager.getLogger(Logger.class);
+
+    protected WebDriver driver;
+
+    @Before
+    public void setUp(){
+        WebDriverManager.chromedriver().setup();
+        driver = new ChromeDriver();
+    }
+
+    @After
+    public void setDown(){
+        if ( driver != null)
+            driver.quit();
+    }
+
     //задание 1
     @Test
-    public void test1(){
+    public void testOtusSearching(){
         String URL = "https://duckduckgo.com";
         String search = "отус";
         By field = By.xpath("//*[@id=\"search_form_input_homepage\"]");
@@ -30,11 +47,15 @@ public class HomeWork extends BaseUItest {
         options.addArguments("headless");
         driver = new ChromeDriver(options);
         driver.get(URL);
+
         enterToTextArea(getElement(field), search);
         getElement(button).click();
-        String finalResult = getElement(result).getText();
-        Assert.assertEquals(finalResult, "Онлайн‑курсы для профессионалов, дистанционное обучение современным ...");
-        System.out.println(finalResult);
+
+        List<WebElement> myElements = driver.findElements(result);
+        String firstElement = myElements.get(0).getText();
+        Assert.assertEquals(firstElement, "Онлайн‑курсы для профессионалов, дистанционное обучение современным ...");
+        System.out.println(firstElement);
+
     }
     private void enterToTextArea(WebElement element, String text){
         element.clear();
@@ -43,9 +64,11 @@ public class HomeWork extends BaseUItest {
 
     //задание 2
     @Test
-    public void test2() {
+    public void testImageOpening() {
         String URL = "https://demo.w3layouts.com/demos_new/template_demo/03-10-2020/photoflash-liberty-demo_Free/685659620/web/index.html?_ga=2.181802926.889871791.1632394818-2083132868.1632394818";
-        By image = By.xpath("//img[@src = \"assets/images/p2.jpg\"]");
+        By image = By.xpath("//img[@src = 'assets/images/p2.jpg']");
+        By popup = By.xpath("//img[@id = 'fullResImage']");
+        String actual = "https://demo.w3layouts.com/demos_new/template_demo/03-10-2020/photoflash-liberty-demo_Free/685659620/web/assets/images/p2.jpg";
 
         driver.get(URL);
         driver.manage().window().fullscreen();
@@ -54,43 +77,39 @@ public class HomeWork extends BaseUItest {
         je.executeScript("arguments[0].scrollIntoView()", getElement(image));
         je.executeScript("arguments[0].click()", getElement(image));
 
-        String parentHandler = driver.getWindowHandle();
-        Set<String> handles = driver.getWindowHandles(); // не работает
-        System.out.println(handles);
+        WebElement popupImage = getElement(popup);
 
-        String subWindowHandler = null;
-
-        Iterator<String> iterator = handles.iterator();
-        while (iterator.hasNext()){
-            subWindowHandler = iterator.next();
+        if(popupImage.isEnabled() && popupImage.isDisplayed()) {
+            Assert.assertEquals(popupImage.getAttribute("src"), actual);
         }
-        driver.switchTo().window(subWindowHandler);
-
-        Assert.assertNotEquals(parentHandler, subWindowHandler); // пока тест фейлится всегда
     }
 
     protected WebElement getElement(By locator){
-        WebDriverWait wait = new WebDriverWait(driver, 5);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
 
     //задание 3
     @Test
-    public void test3(){
+    public void testOtusAuth(){
         String URL = "https://otus.ru";
+        By userName = By.xpath("//p[@class = 'header2-menu__item-text header2-menu__item-text__username']");
+        String actual = "Татьяна";
 
-        driver.quit();
-        driver = new ChromeDriver();
         driver.manage().window().maximize();
-        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
         driver.get(URL);
         auth();
-        System.out.println(driver.manage().getCookies());
+
+        String userNameText = getElement(userName).getText();
+        Assert.assertEquals(userNameText, actual);
+        logger.info(driver.manage().getCookies());
     }
     private void auth(){
         driver.findElement(By.cssSelector("button.header2__auth")).click();
-        driver.findElement(By.xpath("//form[@action = '/login/']//input[@name = 'email']")).sendKeys(login);
-        driver.findElement(By.xpath("//form[@action = '/login/']//input[@name = 'password']")).sendKeys(password);
-        driver.findElement(By.xpath("//form[@action = '/login/']//button[@type = 'submit']")).submit();
+        WebElement form = driver.findElement(By.xpath("//form[@action = '/login/']"));
+        form.findElement(By.xpath(".//input[@name = 'email']")).sendKeys(login);
+        form.findElement(By.xpath(".//input[@name = 'password']")).sendKeys(password);
+        form.findElement(By.xpath(".//button[@type = 'submit']")).submit();
     }
 }
