@@ -1,35 +1,48 @@
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Properties;
 
 public class HomeWork {
 
-    String login = "nemykinats@elfin.tech";
-    String password = "FmAftPJdVFGh";
+    private static String login;
+    private static String password;
 
     private org.apache.logging.log4j.Logger logger = LogManager.getLogger(Logger.class);
 
-    protected WebDriver driver;
+    private static WebDriver driver;
 
-    @Before
-    public void setUp(){
+    @BeforeAll
+    public static void setUp(){
+
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
+
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream("config.properties"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        login = properties.getProperty("login");
+        password = properties.getProperty("password");
     }
 
-    @After
-    public void setDown(){
+    @AfterAll
+    public static void setDown(){
         if ( driver != null)
             driver.quit();
     }
@@ -43,9 +56,12 @@ public class HomeWork {
         By button = By.xpath("//*[@id='search_button_homepage']");
         By result = By.xpath("//a[@href=\"https://otus.ru/\" and @data-testid=\"result-title-a\"]/span");
 
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("headless");
-        driver = new ChromeDriver(options);
+        //убрала открытие Chrome в headless режиме
+
+        //ChromeOptions options = new ChromeOptions();
+        //options.addArguments("headless");
+        //driver = new ChromeDriver(options);
+
         driver.get(URL);
 
         enterToTextArea(getElement(field), search);
@@ -66,16 +82,22 @@ public class HomeWork {
     @Test
     public void testImageOpening() {
         String URL = "https://demo.w3layouts.com/demos_new/template_demo/03-10-2020/photoflash-liberty-demo_Free/685659620/web/index.html?_ga=2.181802926.889871791.1632394818-2083132868.1632394818";
-        By image = By.xpath("//img[@src = 'assets/images/p2.jpg']");
+        By image = By.xpath("//a[@class='image-zoom']");
         By popup = By.xpath("//img[@id = 'fullResImage']");
-        String actual = "https://demo.w3layouts.com/demos_new/template_demo/03-10-2020/photoflash-liberty-demo_Free/685659620/web/assets/images/p2.jpg";
+        String actual = "https://demo.w3layouts.com/demos_new/template_demo/03-10-2020/photoflash-liberty-demo_Free/685659620/web/assets/images/p1.jpg";
 
         driver.get(URL);
         driver.manage().window().fullscreen();
 
+        WebDriverWait webDriverWait = new WebDriverWait(driver, Duration.ofSeconds(5));
+
+        webDriverWait.until(ExpectedConditions.invisibilityOfElementLocated(popup));
         JavascriptExecutor je = (JavascriptExecutor)driver;
-        je.executeScript("arguments[0].scrollIntoView()", getElement(image));
-        je.executeScript("arguments[0].click()", getElement(image));
+
+        List<WebElement> images = driver.findElements(image);
+        WebElement imageElement = images.get(0);
+        je.executeScript("arguments[0].scrollIntoView()", imageElement);
+        je.executeScript("arguments[0].click()", imageElement);
 
         WebElement popupImage = getElement(popup);
 
