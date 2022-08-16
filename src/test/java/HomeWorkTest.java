@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.io.FileInputStream;
@@ -16,7 +15,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 
-public class HomeWork {
+public class HomeWorkTest {
 
     private static String login;
     private static String password;
@@ -50,7 +49,7 @@ public class HomeWork {
     //задание 1
     @Test
     public void testOtusSearching(){
-        String URL = "https://duckduckgo.com";
+        String url = "https://duckduckgo.com";
         String search = "отус";
         By field = By.xpath("//*[@id=\"search_form_input_homepage\"]");
         By button = By.xpath("//*[@id='search_button_homepage']");
@@ -62,7 +61,7 @@ public class HomeWork {
         //options.addArguments("headless");
         //driver = new ChromeDriver(options);
 
-        driver.get(URL);
+        driver.get(url);
 
         enterToTextArea(getElement(field), search);
         getElement(button).click();
@@ -81,12 +80,12 @@ public class HomeWork {
     //задание 2
     @Test
     public void testImageOpening() {
-        String URL = "https://demo.w3layouts.com/demos_new/template_demo/03-10-2020/photoflash-liberty-demo_Free/685659620/web/index.html?_ga=2.181802926.889871791.1632394818-2083132868.1632394818";
+        String url = "https://demo.w3layouts.com/demos_new/template_demo/03-10-2020/photoflash-liberty-demo_Free/685659620/web/index.html?_ga=2.181802926.889871791.1632394818-2083132868.1632394818";
         By image = By.xpath("//a[@class='image-zoom']");
         By popup = By.xpath("//img[@id = 'fullResImage']");
         String actual = "https://demo.w3layouts.com/demos_new/template_demo/03-10-2020/photoflash-liberty-demo_Free/685659620/web/assets/images/p1.jpg";
 
-        driver.get(URL);
+        driver.get(url);
         driver.manage().window().fullscreen();
 
         WebDriverWait webDriverWait = new WebDriverWait(driver, Duration.ofSeconds(5));
@@ -106,7 +105,7 @@ public class HomeWork {
         }
     }
 
-    protected WebElement getElement(By locator){
+    private WebElement getElement(By locator){
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
@@ -114,13 +113,13 @@ public class HomeWork {
     //задание 3
     @Test
     public void testOtusAuth(){
-        String URL = "https://otus.ru";
-        By userName = By.xpath("//p[@class = 'header2-menu__item-text header2-menu__item-text__username']");
+        String url = "https://otus.ru";
+        By userName = By.xpath("//p[contains(@class, 'username')]");
         String actual = "Татьяна";
 
         driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
-        driver.get(URL);
+        driver.get(url);
         auth();
 
         String userNameText = getElement(userName).getText();
