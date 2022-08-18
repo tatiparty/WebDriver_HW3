@@ -2,11 +2,10 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.io.FileInputStream;
@@ -22,13 +21,12 @@ public class HomeWorkTest {
 
     private org.apache.logging.log4j.Logger logger = LogManager.getLogger(Logger.class);
 
-    private static WebDriver driver;
+    private WebDriver driver;
 
-    @BeforeAll
-    public static void setUp(){
+    @BeforeEach
+    public void setUp(){
 
         WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
 
         Properties properties = new Properties();
         try {
@@ -40,8 +38,8 @@ public class HomeWorkTest {
         password = properties.getProperty("password");
     }
 
-    @AfterAll
-    public static void setDown(){
+    @AfterEach
+    public void setDown(){
         if ( driver != null)
             driver.quit();
     }
@@ -55,11 +53,9 @@ public class HomeWorkTest {
         By button = By.xpath("//*[@id='search_button_homepage']");
         By result = By.xpath("//a[@href=\"https://otus.ru/\" and @data-testid=\"result-title-a\"]/span");
 
-        //убрала открытие Chrome в headless режиме
-
-        //ChromeOptions options = new ChromeOptions();
-        //options.addArguments("headless");
-        //driver = new ChromeDriver(options);
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("headless");
+        driver = new ChromeDriver(options);
 
         driver.get(url);
 
@@ -85,6 +81,7 @@ public class HomeWorkTest {
         By popup = By.xpath("//img[@id = 'fullResImage']");
         String actual = "https://demo.w3layouts.com/demos_new/template_demo/03-10-2020/photoflash-liberty-demo_Free/685659620/web/assets/images/p1.jpg";
 
+        driver = new ChromeDriver();
         driver.get(url);
         driver.manage().window().fullscreen();
 
@@ -117,6 +114,7 @@ public class HomeWorkTest {
         By userName = By.xpath("//p[contains(@class, 'username')]");
         String actual = "Татьяна";
 
+        driver = new ChromeDriver();
         driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
         driver.get(url);
